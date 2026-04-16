@@ -1,0 +1,21 @@
+steps:
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/finops-recommender', '.']
+
+  # Push image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/finops-recommender']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run', 'deploy', 'finops-recommender',
+        '--image', 'gcr.io/$PROJECT_ID/finops-recommender',
+        '--region', 'asia-south1',
+        '--platform', 'managed',
+        '--allow-unauthenticated',
+        '--service-account', 'finops-sa@vpsc-test-project.iam.gserviceaccount.com'
+      ]
