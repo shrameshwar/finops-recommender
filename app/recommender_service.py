@@ -6,21 +6,19 @@ from utils import (
     extract_resource
 )
 
-# ✅ Important: explicit recommender types
+# ✅ Known recommender types (important)
 RECOMMENDER_TYPES = [
     "google.compute.instance.IdleResourceRecommender",
     "google.compute.instance.MachineTypeRecommender",
     "google.compute.disk.IdleResourceRecommender",
     "google.compute.firewall.InsightRecommender",
-    "google.iam.policy.Recommender",
-    "google.cloudsql.instance.IdleRecommender"
+    "google.iam.policy.Recommender"
 ]
 
 LOCATIONS = [
     "global",
     "us-central1",
-    "asia-south1",
-    "asia-south1-c"
+    "asia-south1"
 ]
 
 
@@ -34,8 +32,9 @@ def fetch_recommendations(project_id):
             parent = f"projects/{project_id}/locations/{location}/recommenders/{rec_type}"
 
             try:
-                for rec in client.list_recommendations(parent=parent):
+                recommendations = client.list_recommendations(parent=parent)
 
+                for rec in recommendations:
                     results.append({
                         "project": project_id,
                         "location": location,
