@@ -19,8 +19,10 @@ RECOMMENDER_TYPES = [
 
 LOCATIONS = [
     "global",
-    "us-central1",
-    "asia-south1"
+    "asia-south1",
+    "asia-south1-a",
+    "asia-south1-b",
+    "asia-south1-c"
 ]
 
 
