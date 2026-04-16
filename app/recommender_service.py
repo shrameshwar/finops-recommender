@@ -10,9 +10,11 @@ from utils import (
 RECOMMENDER_TYPES = [
     "google.compute.instance.IdleResourceRecommender",
     "google.compute.instance.MachineTypeRecommender",
+    "google.compute.instance.GroupManagerRecommender",
     "google.compute.disk.IdleResourceRecommender",
     "google.compute.firewall.InsightRecommender",
-    "google.iam.policy.Recommender"
+    "google.iam.policy.Recommender",
+    "google.compute.commitment.UsageCommitmentRecommender"
 ]
 
 LOCATIONS = [
