@@ -1,5 +1,7 @@
 from google.cloud import recommender_v1
-from .utils import (
+
+# ✅ FIX: absolute import (no dot)
+from utils import (
     extract_savings,
     extract_category,
     extract_priority,
@@ -35,17 +37,18 @@ def fetch_recommendations(project_id):
                             "location": location,
                             "recommender": recommender_name.split("/")[-1],
                             "resource": extract_resource(rec),
-                            "description": rec.description,
+                            "description": rec.description or "No description",
                             "category": extract_category(rec),
                             "priority": extract_priority(rec),
-                            "state": rec.state_info.state.name,
+                            "state": rec.state_info.state.name if rec.state_info else "UNKNOWN",
                             "savings": extract_savings(rec)
                         })
 
                 except Exception as inner_error:
-                    print(f"Error recommendations: {inner_error}")
+                    print(f"[ERROR] Recommendations fetch failed: {inner_error}")
 
         except Exception as e:
-            print(f"Error recommenders {location}: {e}")
+            print(f"[ERROR] Recommender list failed for {location}: {e}")
 
-    return sorted(results, key=lambda x: x["savings"], reverse=True)
+    # ✅ Sort safely
+    return sorted(results, key=lambda x: x.get("savings", 0), reverse=True)
