@@ -19,3 +19,5 @@ steps:
         '--allow-unauthenticated',
         '--service-account', 'finops-sa@vpsc-test-project.iam.gserviceaccount.com'
       ]
+options:
+  logging: CLOUD_LOGGING_ONLY
