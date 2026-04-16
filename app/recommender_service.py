@@ -1,6 +1,4 @@
 from google.cloud import recommender_v1
-
-# ✅ FIX: absolute import (no dot)
 from utils import (
     extract_savings,
     extract_category,
@@ -8,11 +6,21 @@ from utils import (
     extract_resource
 )
 
+# ✅ Important: explicit recommender types
+RECOMMENDER_TYPES = [
+    "google.compute.instance.IdleResourceRecommender",
+    "google.compute.instance.MachineTypeRecommender",
+    "google.compute.disk.IdleResourceRecommender",
+    "google.compute.firewall.InsightRecommender",
+    "google.iam.policy.Recommender",
+    "google.cloudsql.instance.IdleRecommender"
+]
+
 LOCATIONS = [
     "global",
     "us-central1",
     "asia-south1",
-    "europe-west1"
+    "asia-south1-c"
 ]
 
 
@@ -21,34 +29,26 @@ def fetch_recommendations(project_id):
     results = []
 
     for location in LOCATIONS:
-        parent = f"projects/{project_id}/locations/{location}"
+        for rec_type in RECOMMENDER_TYPES:
 
-        try:
-            recommenders = client.list_recommenders(parent=parent)
+            parent = f"projects/{project_id}/locations/{location}/recommenders/{rec_type}"
 
-            for rec_engine in recommenders:
-                recommender_name = rec_engine.name
+            try:
+                for rec in client.list_recommendations(parent=parent):
 
-                try:
-                    for rec in client.list_recommendations(parent=recommender_name):
+                    results.append({
+                        "project": project_id,
+                        "location": location,
+                        "recommender": rec_type.split(".")[-1],
+                        "resource": extract_resource(rec),
+                        "description": rec.description or "No description",
+                        "category": extract_category(rec),
+                        "priority": extract_priority(rec),
+                        "state": rec.state_info.state.name if rec.state_info else "UNKNOWN",
+                        "savings": extract_savings(rec)
+                    })
 
-                        results.append({
-                            "project": project_id,
-                            "location": location,
-                            "recommender": recommender_name.split("/")[-1],
-                            "resource": extract_resource(rec),
-                            "description": rec.description or "No description",
-                            "category": extract_category(rec),
-                            "priority": extract_priority(rec),
-                            "state": rec.state_info.state.name if rec.state_info else "UNKNOWN",
-                            "savings": extract_savings(rec)
-                        })
+            except Exception as e:
+                print(f"[ERROR] {rec_type} @ {location}: {e}")
 
-                except Exception as inner_error:
-                    print(f"[ERROR] Recommendations fetch failed: {inner_error}")
-
-        except Exception as e:
-            print(f"[ERROR] Recommender list failed for {location}: {e}")
-
-    # ✅ Sort safely
     return sorted(results, key=lambda x: x.get("savings", 0), reverse=True)
